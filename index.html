@@ -11,7 +11,10 @@
     <main class="app-shell">
       <aside class="sidebar" aria-label="笔记列表">
         <div class="brand-row">
-          <a class="brand" href="#" aria-label="纸间首页">纸间</a>
+          <a class="brand" href="#" aria-label="纸间首页">
+            <img class="brand-logo" src="logo.svg" alt="" width="36" height="36" />
+            <span>纸间</span>
+          </a>
           <button class="icon-button" id="new-note" aria-label="新建笔记" title="新建笔记">＋</button>
         </div>
         <label class="search-box" for="search-input">
@@ -30,6 +33,10 @@
       <section class="editor" aria-label="笔记编辑器">
         <div class="editor-topbar">
           <span id="save-status" role="status">已保存</span>
+          <div class="mode-switch" role="group" aria-label="编辑器模式">
+            <button id="edit-mode" class="mode-button active" type="button" aria-pressed="true">编辑</button>
+            <button id="preview-mode" class="mode-button" type="button" aria-pressed="false">预览</button>
+          </div>
           <button id="delete-note" class="text-button" type="button">删除</button>
         </div>
         <div id="empty-state" class="empty-state" hidden>
@@ -41,7 +48,11 @@
         <div id="editor-fields" class="editor-fields">
           <input id="note-title" class="title-input" type="text" placeholder="无标题笔记" aria-label="笔记标题" />
           <p id="updated-at" class="updated-at"></p>
-          <textarea id="note-content" placeholder="在这里开始写作…" aria-label="笔记内容"></textarea>
+          <div class="editor-surface">
+            <pre id="markdown-highlight" class="markdown-highlight" aria-hidden="true"><code></code></pre>
+            <textarea id="note-content" placeholder="在这里开始写作…" aria-label="笔记内容" spellcheck="true"></textarea>
+            <article id="markdown-preview" class="markdown-preview" aria-label="Markdown 预览"></article>
+          </div>
         </div>
       </section>
     </main>
@@ -52,6 +63,7 @@
         <time class="note-item-date"></time>
       </button>
     </template>
-    <script type="module" src="app.js"></script>
+    <script src="notes-core.js"></script>
+    <script src="app.js"></script>
   </body>
 </html>

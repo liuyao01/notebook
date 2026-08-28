@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">纸间 Logo</title>
+  <desc id="desc">一张带折角的纸页与一笔手写线条</desc>
+  <style>
+    :root { --ink: #24231f; --paper: #f6f4ef; --accent: #db624c; --shade: #dfddd6; }
+    @media (prefers-color-scheme: dark) {
+      :root { --ink: #f1eee7; --paper: #292d2a; --accent: #f18a72; --shade: #404541; }
+    }
+  </style>
+  <path d="M29 18h47l23 23v61a8 8 0 0 1-8 8H29a8 8 0 0 1-8-8V26a8 8 0 0 1 8-8Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M76 18v18a5 5 0 0 0 5 5h18" fill="none" stroke="var(--ink)" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M42 55h27M42 70h42" fill="none" stroke="var(--shade)" stroke-width="6" stroke-linecap="round"/>
+  <path d="m42 90 10-3 30-30a5 5 0 0 1 7 7L59 94l-17 3Z" fill="var(--accent)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/>
+  <path d="m78 61 7 7M42 90l10-3-7-7-3 10Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round"/>
+</svg>

@@ -1,4 +1,4 @@
-import { STORAGE_KEY, THEME_KEY, createNote, deleteNote, findNotes, nextTheme, normalizeTheme, noteLabel, orderNotes, sanitizeNotes, updateNote } from "./notes-core.js";
+const { STORAGE_KEY, THEME_KEY, createNote, deleteNote, findNotes, nextTheme, normalizeTheme, noteLabel, orderNotes, sanitizeNotes, updateNote, renderMarkdown, highlightMarkdown } = window.NotesCore;
 
 const elements = {
   newButton: document.querySelector("#new-note"), emptyNewButton: document.querySelector("#empty-new-note"),
@@ -7,22 +7,33 @@ const elements = {
   title: document.querySelector("#note-title"), content: document.querySelector("#note-content"),
   updatedAt: document.querySelector("#updated-at"), status: document.querySelector("#save-status"),
   themeToggle: document.querySelector("#theme-toggle"), themeLabel: document.querySelector("#theme-label"),
+  editMode: document.querySelector("#edit-mode"), previewMode: document.querySelector("#preview-mode"), highlight: document.querySelector("#markdown-highlight code"), preview: document.querySelector("#markdown-preview"),
   fields: document.querySelector("#editor-fields"), empty: document.querySelector("#empty-state"), template: document.querySelector("#note-item-template"),
 };
 
 let notes = loadNotes();
 let selectedId = orderNotes(notes)[0]?.id ?? null;
 let saveTimer;
-let theme = normalizeTheme(localStorage.getItem(THEME_KEY));
+let theme = normalizeTheme(readStorage(THEME_KEY));
+let mode = "edit";
+
+function readStorage(key) {
+  try { return localStorage.getItem(key); }
+  catch { return null; }
+}
+
+function writeStorage(key, value) {
+  try { localStorage.setItem(key, value); return true; }
+  catch { return false; }
+}
 
 function loadNotes() {
-  try { return sanitizeNotes(JSON.parse(localStorage.getItem(STORAGE_KEY))); }
+  try { return sanitizeNotes(JSON.parse(readStorage(STORAGE_KEY))); }
   catch { return []; }
 }
 
 function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-  elements.status.textContent = "已保存";
+  elements.status.textContent = writeStorage(STORAGE_KEY, JSON.stringify(notes)) ? "已保存" : "仅本次会话";
 }
 
 function applyTheme() {
@@ -33,6 +44,22 @@ function applyTheme() {
   elements.themeToggle.title = isDark ? "切换浅色模式" : "切换深色模式";
   elements.themeToggle.querySelector(".theme-icon").textContent = isDark ? "☀" : "☾";
   elements.themeLabel.textContent = isDark ? "浅色模式" : "深色模式";
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  const isEdit = mode === "edit";
+  elements.fields.closest(".editor").dataset.mode = mode;
+  elements.editMode.classList.toggle("active", isEdit);
+  elements.previewMode.classList.toggle("active", !isEdit);
+  elements.editMode.setAttribute("aria-pressed", String(isEdit));
+  elements.previewMode.setAttribute("aria-pressed", String(!isEdit));
+  if (!isEdit) elements.preview.innerHTML = renderMarkdown(elements.content.value);
+}
+
+function refreshMarkdownViews() {
+  elements.highlight.innerHTML = `${highlightMarkdown(elements.content.value)}\n`;
+  elements.preview.innerHTML = renderMarkdown(elements.content.value);
 }
 
 function selectedNote() { return notes.find((note) => note.id === selectedId); }
@@ -62,6 +89,7 @@ function render() {
   if (selected) {
     elements.title.value = selected.title;
     elements.content.value = selected.content;
+    refreshMarkdownViews();
     elements.updatedAt.textContent = `最后编辑于 ${formatDate(selected.updatedAt)}`;
   }
 }
@@ -77,6 +105,7 @@ function queueSave() {
   const current = selectedNote();
   if (!current) return;
   elements.status.textContent = "保存中…";
+  refreshMarkdownViews();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     notes = updateNote(notes, current.id, { title: elements.title.value, content: elements.content.value });
@@ -87,9 +116,12 @@ function queueSave() {
 elements.newButton.addEventListener("click", addNote);
 elements.emptyNewButton.addEventListener("click", addNote);
 elements.search.addEventListener("input", render);
+elements.editMode.addEventListener("click", () => setMode("edit"));
+elements.previewMode.addEventListener("click", () => setMode("preview"));
+elements.content.addEventListener("scroll", () => { elements.highlight.parentElement.scrollTop = elements.content.scrollTop; });
 elements.themeToggle.addEventListener("click", () => {
   theme = nextTheme(theme);
-  localStorage.setItem(THEME_KEY, theme);
+  writeStorage(THEME_KEY, theme);
   applyTheme();
 });
 elements.title.addEventListener("input", queueSave);
@@ -111,4 +143,5 @@ window.addEventListener("beforeunload", () => {
 });
 
 applyTheme();
+setMode("edit");
 render();
