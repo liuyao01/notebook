@@ -1,4 +1,4 @@
-import { STORAGE_KEY, createNote, deleteNote, findNotes, noteLabel, orderNotes, sanitizeNotes, updateNote } from "./notes-core.js";
+import { STORAGE_KEY, THEME_KEY, createNote, deleteNote, findNotes, nextTheme, normalizeTheme, noteLabel, orderNotes, sanitizeNotes, updateNote } from "./notes-core.js";
 
 const elements = {
   newButton: document.querySelector("#new-note"), emptyNewButton: document.querySelector("#empty-new-note"),
@@ -6,12 +6,14 @@ const elements = {
   list: document.querySelector("#note-list"), count: document.querySelector("#note-count"),
   title: document.querySelector("#note-title"), content: document.querySelector("#note-content"),
   updatedAt: document.querySelector("#updated-at"), status: document.querySelector("#save-status"),
+  themeToggle: document.querySelector("#theme-toggle"), themeLabel: document.querySelector("#theme-label"),
   fields: document.querySelector("#editor-fields"), empty: document.querySelector("#empty-state"), template: document.querySelector("#note-item-template"),
 };
 
 let notes = loadNotes();
 let selectedId = orderNotes(notes)[0]?.id ?? null;
 let saveTimer;
+let theme = normalizeTheme(localStorage.getItem(THEME_KEY));
 
 function loadNotes() {
   try { return sanitizeNotes(JSON.parse(localStorage.getItem(STORAGE_KEY))); }
@@ -21,6 +23,16 @@ function loadNotes() {
 function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
   elements.status.textContent = "已保存";
+}
+
+function applyTheme() {
+  const isDark = theme === "dark";
+  document.documentElement.dataset.theme = theme;
+  document.querySelector('meta[name="theme-color"]').content = isDark ? "#1e211f" : "#f6f4ef";
+  elements.themeToggle.setAttribute("aria-pressed", String(isDark));
+  elements.themeToggle.title = isDark ? "切换浅色模式" : "切换深色模式";
+  elements.themeToggle.querySelector(".theme-icon").textContent = isDark ? "☀" : "☾";
+  elements.themeLabel.textContent = isDark ? "浅色模式" : "深色模式";
 }
 
 function selectedNote() { return notes.find((note) => note.id === selectedId); }
@@ -75,6 +87,11 @@ function queueSave() {
 elements.newButton.addEventListener("click", addNote);
 elements.emptyNewButton.addEventListener("click", addNote);
 elements.search.addEventListener("input", render);
+elements.themeToggle.addEventListener("click", () => {
+  theme = nextTheme(theme);
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme();
+});
 elements.title.addEventListener("input", queueSave);
 elements.content.addEventListener("input", queueSave);
 elements.deleteButton.addEventListener("click", () => {
@@ -93,4 +110,5 @@ window.addEventListener("beforeunload", () => {
   persist();
 });
 
+applyTheme();
 render();

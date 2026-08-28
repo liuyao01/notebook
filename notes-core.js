@@ -1,4 +1,13 @@
 export const STORAGE_KEY = "zhijian-notes-v1";
+export const THEME_KEY = "zhijian-theme-v1";
+
+export function normalizeTheme(theme) {
+  return theme === "dark" ? "dark" : "light";
+}
+
+export function nextTheme(theme) {
+  return normalizeTheme(theme) === "light" ? "dark" : "light";
+}
 
 export function createNote(now = Date.now()) {
   return { id: crypto.randomUUID(), title: "", content: "", createdAt: now, updatedAt: now };
